@@ -81,3 +81,30 @@ jobs:
       run: |
         docker tag calgitdocker:latest ${{ secrets.DOCKER_USERNAME }}/calgitdocker:latest
         docker push ${{ secrets.DOCKER_USERNAME }}/calgitdocker:latest
+        
+    - name: Start Minikube
+      uses: medyagh/setup-minikube@latest
+      with:
+        minikube-version: 'latest'
+        kubernetes-version: 'latest'
+        start-args: '--insecure-registry "192.168.49.0/24"'
+
+    - name: Build Docker image
+      run: |
+        eval $(minikube docker-env)
+        docker build -t calgitdocker .
+
+    - name: Push to Minikube registry
+      run: |
+        docker tag calgitdocker localhost:5000/calgitdocker
+        docker push localhost:5000/calgitdocker
+
+    - name: Deploy to Minikube
+      run: |
+        kubectl create deployment calgitdocker --image=localhost:5000/calgitdocker
+        kubectl expose deployment calgitdocker --type=NodePort --port=8080
+
+    - name: Wait for deployment
+      run: |
+        kubectl rollout status deployment/calgitdocker
+        minikube service calgitdocker --url
