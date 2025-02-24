@@ -99,20 +99,21 @@ jobs:
         docker tag calgitdocker localhost:5000/calgitdocker
         docker push localhost:5000/calgitdocker
 
-    - name: Delete existing deployment
-      run: kubectl delete deployment calgitdocker --ignore-not-found
-
-    - name: Deploy to Minikube
+    - name: Delete existing deployment and service
       run: |
-        kubectl create deployment calgitdocker --image=localhost:5000/calgitdocker
-        kubectl expose deployment calgitdocker --type=NodePort --port=8080
+        kubectl delete deployment calgitdocker --ignore-not-found
+        kubectl delete service calgitdocker --ignore-not-found
 
 
-    - name: Wait for deployment
-      run: |
-        kubectl rollout status deployment/calgitdocker
-        minikube service calgitdocker --url
-    
+    - name: Create deployment
+      run: kubectl create deployment calgitdocker --image=localhost:5000/calgitdocker
+      
+    - name: Expose deployment
+      run: kubectl expose deployment calgitdocker --type=NodePort --port=8080
+
+    - name: Wait for deployment to be ready
+      run: kubectl rollout status deployment/calgitdocker
+
     - name: Test the application
       run: |
         POD_NAME=$(kubectl get pods -l app=calgitdocker -o jsonpath="{.items[0].metadata.name}")
@@ -120,4 +121,5 @@ jobs:
         sleep 5
         curl -s "http://localhost:8080/sum?a=5&b=1"
         pkill -f "port-forward"
+
 
