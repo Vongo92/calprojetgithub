@@ -79,5 +79,5 @@ jobs:
 
     - name: Push Docker image to Docker Hub
       run: |
-        docker tag calgitdocker:latest ${{ secrets.DOCKER_USERNAME }}/my-spring-app:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/my-spring-app:latest
+        docker tag calgitdocker:latest ${{ secrets.DOCKER_USERNAME }}/calgitdocker:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/calgitdocker:latest
